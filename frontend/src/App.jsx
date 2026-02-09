@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from 'reac
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : '/api';
 
 // Utility functions
 const truncateHash = (hash, chars = 8) => {
