@@ -1,0 +1,21 @@
+{
+  "name": "wattx-explorer-backend",
+  "version": "1.0.0",
+  "description": "WATTx Block Explorer Backend",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js"
+  },
+  "keywords": ["wattx", "explorer", "blockchain"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "better-sqlite3": "^12.6.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "ethers": "^6.16.0",
+    "express": "^5.2.1"
+  }
+}

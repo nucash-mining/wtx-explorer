@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WATTx Explorer Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+    h1 { color: #2563eb; }
+    .card { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background: #f0f0f0; }
+    .token { color: #059669; font-weight: bold; }
+    .address { font-family: monospace; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div style="background: #2563eb; color: white; padding: 20px; margin: -40px -40px 20px -40px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
+      <h1 style="margin: 0;">WATTx Explorer</h1>
+      <div>
+        <input type="text" id="search" placeholder="Search address, tx, block..."
+          style="padding: 10px 15px; border: none; border-radius: 4px 0 0 4px; width: 300px; font-size: 14px;">
+        <button onclick="doSearch()"
+          style="padding: 10px 20px; background: #1d4ed8; color: white; border: none; border-radius: 0 4px 4px 0; cursor: pointer;">
+          Search
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="searchResults" class="card" style="display: none;">
+    <h2>Search Results</h2>
+    <div id="results"></div>
+  </div>
+
+  <div class="card">
+    <h2>Chain Info</h2>
+    <div id="chain">Loading...</div>
+  </div>
+
+  <div class="card">
+    <h2>Deployed Contracts</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Symbol</th>
+          <th>Hex Address</th>
+          <th>Base58 Address</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="contracts">
+        <tr><td colspan="5">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="contractDetails" class="card" style="display: none;">
+    <h2>Contract Details</h2>
+    <div id="contractInfo"></div>
+  </div>
+
+  <div class="card">
+    <h2>Recent Blocks</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Height</th>
+          <th>Type</th>
+          <th>Txs</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="blocks">
+        <tr><td colspan="4">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const API = 'http://localhost:3001/api';
+
+    async function load() {
+      // Load chain info
+      try {
+        const chain = await fetch(API + '/chain').then(r => r.json());
+        document.getElementById('chain').innerHTML = `
+          <p><b>Network:</b> ${chain.chain}</p>
+          <p><b>Blocks:</b> ${chain.blocks}</p>
+          <p><b>Staking:</b> ${chain.stakingInfo?.staking ? 'Active' : 'Inactive'}</p>
+        `;
+      } catch(e) {
+        document.getElementById('chain').innerHTML = 'Error: ' + e.message;
+      }
+
+      // Load contracts
+      try {
+        const data = await fetch(API + '/contracts').then(r => r.json());
+        window.contractsData = data.contracts;
+        const html = data.contracts.map((c, i) => `
+          <tr>
+            <td class="token">${c.token?.name || 'Contract'}</td>
+            <td>${c.token?.symbol || '-'}</td>
+            <td class="address">${c.address}</td>
+            <td class="address">${c.base58Address}</td>
+            <td><button onclick="viewContract(${i})" style="padding: 5px 10px; cursor: pointer;">View Details</button></td>
+          </tr>
+        `).join('');
+        document.getElementById('contracts').innerHTML = html || '<tr><td colspan="5">No contracts</td></tr>';
+      } catch(e) {
+        document.getElementById('contracts').innerHTML = '<tr><td colspan="5">Error: ' + e.message + '</td></tr>';
+      }
+
+      // Load blocks
+      try {
+        const data = await fetch(API + '/blocks?limit=10').then(r => r.json());
+        const html = data.blocks.map(b => `
+          <tr>
+            <td>${b.height}</td>
+            <td>${b.is_pos ? 'PoS' : 'PoW'}</td>
+            <td>${b.tx_count}</td>
+            <td>${new Date(b.timestamp * 1000).toLocaleString()}</td>
+          </tr>
+        `).join('');
+        document.getElementById('blocks').innerHTML = html;
+      } catch(e) {
+        document.getElementById('blocks').innerHTML = '<tr><td colspan="4">Error: ' + e.message + '</td></tr>';
+      }
+    }
+
+    load();
+
+    // Search function
+    async function doSearch() {
+      const query = document.getElementById('search').value.trim();
+      if (!query) return;
+
+      const resultsDiv = document.getElementById('results');
+      const container = document.getElementById('searchResults');
+      container.style.display = 'block';
+      resultsDiv.innerHTML = 'Searching...';
+
+      try {
+        // Check if it's a block number
+        if (/^\d+$/.test(query)) {
+          const block = await fetch(API + '/block/' + query).then(r => r.json());
+          if (block.block) {
+            resultsDiv.innerHTML = `
+              <h3>Block #${block.block.height}</h3>
+              <p><b>Hash:</b> <span class="address">${block.block.hash}</span></p>
+              <p><b>Type:</b> ${block.block.is_pos ? 'PoS' : 'PoW'}</p>
+              <p><b>Transactions:</b> ${block.block.tx_count}</p>
+              <p><b>Time:</b> ${new Date(block.block.timestamp * 1000).toLocaleString()}</p>
+            `;
+            return;
+          }
+        }
+
+        // Check if it's an address (hex or base58)
+        if (query.startsWith('0x') || query.startsWith('w') || query.startsWith('W') || query.length === 40) {
+          // Try as token first
+          try {
+            const token = await fetch(API + '/token/' + query).then(r => r.json());
+            if (token.token) {
+              resultsDiv.innerHTML = `
+                <h3>Token: ${token.token.name} (${token.token.symbol})</h3>
+                <p><b>Address:</b> <span class="address">0x${token.token.address}</span></p>
+                <p><b>Decimals:</b> ${token.token.decimals}</p>
+                <p><b>Total Supply:</b> ${token.token.total_supply}</p>
+              `;
+              return;
+            }
+          } catch(e) {}
+
+          // Try as address
+          try {
+            const addr = await fetch(API + '/address/' + query).then(r => r.json());
+            resultsDiv.innerHTML = `
+              <h3>Address</h3>
+              <p><b>Address:</b> <span class="address">${addr.address}</span></p>
+              <p><b>Is Contract:</b> ${addr.isContract ? 'Yes' : 'No'}</p>
+              ${addr.isContract ? '<p><b>Code:</b> <span class="address">' + (addr.code?.substring(0, 50) || '') + '...</span></p>' : ''}
+            `;
+            return;
+          } catch(e) {}
+        }
+
+        // Try as transaction hash
+        if (query.length === 64 || (query.startsWith('0x') && query.length === 66)) {
+          try {
+            const tx = await fetch(API + '/tx/' + query).then(r => r.json());
+            if (tx.transaction) {
+              resultsDiv.innerHTML = `
+                <h3>Transaction</h3>
+                <p><b>Hash:</b> <span class="address">${tx.transaction.hash}</span></p>
+                <p><b>Block:</b> ${tx.transaction.block_height}</p>
+              `;
+              return;
+            }
+          } catch(e) {}
+        }
+
+        resultsDiv.innerHTML = '<p>No results found for: ' + query + '</p>';
+      } catch(e) {
+        resultsDiv.innerHTML = 'Error: ' + e.message;
+      }
+    }
+
+    // Search on Enter key
+    document.getElementById('search').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') doSearch();
+    });
+
+    // View contract details
+    async function viewContract(index) {
+      const contract = window.contractsData[index];
+      const detailsDiv = document.getElementById('contractDetails');
+      const infoDiv = document.getElementById('contractInfo');
+
+      detailsDiv.style.display = 'block';
+      infoDiv.innerHTML = 'Loading contract details...';
+
+      try {
+        const hexAddr = contract.address.replace('0x', '');
+
+        // Get token info
+        let tokenHtml = '';
+        if (contract.isToken) {
+          const tokenData = await fetch(API + '/token/' + hexAddr).then(r => r.json());
+          const token = tokenData.token;
+          tokenHtml = `
+            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+              <h3 style="margin-top: 0; color: #059669;">Token Information</h3>
+              <table style="width: 100%;">
+                <tr><td style="width: 150px;"><b>Name:</b></td><td>${token.name}</td></tr>
+                <tr><td><b>Symbol:</b></td><td>${token.symbol}</td></tr>
+                <tr><td><b>Decimals:</b></td><td>${token.decimals}</td></tr>
+                <tr><td><b>Total Supply:</b></td><td>${token.total_supply}</td></tr>
+              </table>
+            </div>
+          `;
+        }
+
+        // Get contract code
+        let codeHtml = '';
+        try {
+          const codeRes = await fetch(API + '/rpc', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ method: 'getcontractcode', params: [hexAddr] })
+          }).then(r => r.json());
+
+          if (codeRes.result) {
+            const code = codeRes.result;
+            codeHtml = `
+              <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <h3 style="margin-top: 0;">Contract Bytecode</h3>
+                <p><b>Size:</b> ${Math.floor(code.length / 2)} bytes</p>
+                <div style="background: #1e1e1e; color: #d4d4d4; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 11px; word-break: break-all; max-height: 150px; overflow-y: auto;">
+                  ${code.substring(0, 500)}${code.length > 500 ? '...' : ''}
+                </div>
+              </div>
+            `;
+          }
+        } catch(e) {
+          console.error('Failed to get code:', e);
+        }
+
+        // Get account info
+        let accountHtml = '';
+        try {
+          const accountRes = await fetch(API + '/rpc', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ method: 'getaccountinfo', params: [hexAddr] })
+          }).then(r => r.json());
+
+          if (accountRes.result) {
+            const acc = accountRes.result;
+            accountHtml = `
+              <div style="background: #eff6ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <h3 style="margin-top: 0; color: #2563eb;">Account Info</h3>
+                <table style="width: 100%;">
+                  <tr><td style="width: 150px;"><b>Balance:</b></td><td>${acc.balance} WTX</td></tr>
+                  <tr><td><b>Storage Used:</b></td><td>${Object.keys(acc.storage || {}).length} entries</td></tr>
+                </table>
+              </div>
+            `;
+          }
+        } catch(e) {
+          console.error('Failed to get account:', e);
+        }
+
+        infoDiv.innerHTML = `
+          <div style="background: #fafafa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <h3 style="margin-top: 0;">Contract Address</h3>
+            <table style="width: 100%;">
+              <tr><td style="width: 150px;"><b>Hex (EVM):</b></td><td class="address">${contract.address}</td></tr>
+              <tr><td><b>Base58 (WATTx):</b></td><td class="address">${contract.base58Address}</td></tr>
+            </table>
+          </div>
+          ${tokenHtml}
+          ${accountHtml}
+          ${codeHtml}
+          <div style="margin-top: 15px;">
+            <button onclick="document.getElementById('contractDetails').style.display='none'"
+                    style="padding: 10px 20px; cursor: pointer;">Close</button>
+          </div>
+        `;
+      } catch(e) {
+        infoDiv.innerHTML = 'Error loading contract: ' + e.message;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WATTx Explorer</title>
+    <link rel="icon" type="image/png" href="/logo.png">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        header { background: linear-gradient(135deg, #161b22 0%, #21262d 100%); padding: 20px 30px; margin-bottom: 20px; border-radius: 12px; border: 1px solid #30363d; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { color: #58a6ff; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { color: #8b949e; text-decoration: none; font-size: 14px; padding: 8px 16px; border-radius: 6px; transition: all 0.2s; }
+        .nav-links a:hover, .nav-links a.active { background: #21262d; color: #58a6ff; }
+
+        /* Stats Grid */
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #161b22; padding: 20px; border-radius: 12px; border: 1px solid #30363d; transition: border-color 0.2s; }
+        .stat-card:hover { border-color: #58a6ff; }
+        .stat-card h3 { color: #8b949e; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .stat-card .value { color: #f0f6fc; font-size: 24px; font-weight: 600; }
+        .stat-card .sub { color: #8b949e; font-size: 12px; margin-top: 4px; }
+        .stat-card .value.green { color: #3fb950; }
+        .stat-card .value.yellow { color: #d29922; }
+        .stat-card .value.blue { color: #58a6ff; }
+
+        /* Search */
+        .search-box { display: flex; gap: 10px; margin-bottom: 25px; }
+        .search-box input { flex: 1; padding: 14px 18px; border: 1px solid #30363d; border-radius: 8px; background: #161b22; color: #c9d1d9; font-size: 14px; transition: border-color 0.2s; }
+        .search-box input:focus { outline: none; border-color: #58a6ff; }
+        .search-box input::placeholder { color: #6e7681; }
+        .search-box button { padding: 14px 28px; background: #238636; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: background 0.2s; }
+        .search-box button:hover { background: #2ea043; }
+
+        /* Sections */
+        .section { background: #161b22; border-radius: 12px; border: 1px solid #30363d; margin-bottom: 20px; overflow: hidden; }
+        .section-header { padding: 16px 20px; border-bottom: 1px solid #30363d; display: flex; justify-content: space-between; align-items: center; }
+        .section-header h2 { font-size: 16px; font-weight: 600; color: #f0f6fc; }
+        .section-header .badge { background: #238636; color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .section-content { padding: 0; }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #21262d; }
+        th { color: #8b949e; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; background: #0d1117; }
+        td { font-size: 14px; }
+        tr:hover { background: #21262d; }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .hash { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; }
+        .truncate { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
+        .amount { font-weight: 500; color: #3fb950; }
+        .amount.negative { color: #f85149; }
+        .time { color: #8b949e; font-size: 13px; }
+
+        /* Token Page */
+        .token-header { padding: 30px; background: linear-gradient(135deg, #161b22 0%, #1c2128 100%); border-bottom: 1px solid #30363d; }
+        .token-title { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .token-icon { width: 48px; height: 48px; background: linear-gradient(135deg, #58a6ff 0%, #238636 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; color: #fff; }
+        .token-name { font-size: 28px; font-weight: 700; color: #f0f6fc; }
+        .token-symbol { font-size: 16px; color: #8b949e; margin-left: 10px; }
+        .token-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .token-stat { background: #0d1117; padding: 16px; border-radius: 8px; }
+        .token-stat label { display: block; color: #8b949e; font-size: 12px; text-transform: uppercase; margin-bottom: 6px; }
+        .token-stat span { display: block; color: #f0f6fc; font-size: 18px; font-weight: 600; }
+        .token-stat span.mono { font-family: 'SF Mono', Consolas, monospace; font-size: 14px; word-break: break-all; }
+
+        /* Tabs */
+        .tabs { display: flex; border-bottom: 1px solid #30363d; padding: 0 20px; background: #0d1117; }
+        .tab { padding: 14px 20px; color: #8b949e; cursor: pointer; border-bottom: 2px solid transparent; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+        .tab:hover { color: #c9d1d9; }
+        .tab.active { color: #58a6ff; border-bottom-color: #58a6ff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Transfer row */
+        .transfer-row { display: flex; align-items: center; gap: 10px; }
+        .transfer-arrow { color: #8b949e; font-size: 12px; }
+        .transfer-arrow.in { color: #3fb950; }
+        .transfer-arrow.out { color: #f85149; }
+        .address-tag { background: #21262d; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+
+        /* Token list */
+        .token-list-item { display: flex; align-items: center; gap: 15px; padding: 16px 20px; border-bottom: 1px solid #21262d; transition: background 0.2s; cursor: pointer; }
+        .token-list-item:hover { background: #21262d; }
+        .token-list-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #58a6ff 0%, #238636 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: #fff; }
+        .token-list-info { flex: 1; }
+        .token-list-name { font-weight: 600; color: #f0f6fc; }
+        .token-list-symbol { color: #8b949e; font-size: 13px; }
+        .token-list-supply { text-align: right; color: #8b949e; font-size: 13px; }
+
+        /* Holder row */
+        .holder-rank { width: 40px; color: #8b949e; font-weight: 500; }
+        .holder-percent { color: #8b949e; font-size: 13px; }
+        .progress-bar { height: 4px; background: #21262d; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .progress-bar .fill { height: 100%; background: #58a6ff; border-radius: 2px; }
+
+        /* Back button */
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; color: #8b949e; font-size: 14px; margin-bottom: 20px; cursor: pointer; }
+        .back-btn:hover { color: #58a6ff; }
+
+        /* Loading */
+        .loading { text-align: center; padding: 40px; color: #8b949e; }
+        .loading::after { content: ''; display: inline-block; width: 20px; height: 20px; border: 2px solid #30363d; border-top-color: #58a6ff; border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Hidden */
+        .hidden { display: none !important; }
+
+        /* JSON viewer */
+        #result { background: #0d1117; padding: 20px; overflow-x: auto; white-space: pre-wrap; font-family: 'SF Mono', Consolas, monospace; font-size: 13px; color: #c9d1d9; max-height: 500px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><img src="/logo.png" alt="WATTx" style="height: 40px; vertical-align: middle; margin-right: 10px;">WATTx Explorer</h1>
+            <nav class="nav-links">
+                <a href="#" onclick="showHome()" class="active" id="nav-home">Home</a>
+                <a href="#" onclick="showTokens()" id="nav-tokens">Tokens</a>
+            </nav>
+        </header>
+
+        <!-- Home Page -->
+        <div id="homePage">
+            <div class="stats" id="stats">
+                <div class="stat-card"><h3>Block Height</h3><div class="value blue" id="height">-</div></div>
+                <div class="stat-card"><h3>Chain</h3><div class="value" id="chain">-</div></div>
+                <div class="stat-card"><h3>PoS Difficulty</h3><div class="value" id="posDifficulty">-</div></div>
+                <div class="stat-card"><h3>Network Stake</h3><div class="value green" id="netStake">-</div></div>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search by block height, tx hash, address, or token contract...">
+                <button onclick="search()">Search</button>
+            </div>
+
+            <div class="section" id="resultSection" style="display:none;">
+                <div class="section-header">
+                    <h2>Search Result</h2>
+                </div>
+                <div class="section-content">
+                    <pre id="result"></pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2>Recent Blocks</h2>
+                    <span class="badge" id="blockCount">-</span>
+                </div>
+                <div class="section-content">
+                    <table>
+                        <thead><tr><th>Height</th><th>Hash</th><th>Age</th><th>Txs</th><th>Size</th></tr></thead>
+                        <tbody id="blocks"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Token List Page -->
+        <div id="tokensPage" class="hidden">
+            <div class="section">
+                <div class="section-header">
+                    <h2>QRC20 Tokens</h2>
+                    <span class="badge" id="tokenCount">-</span>
+                </div>
+                <div class="section-content" id="tokenList">
+                    <div class="loading">Loading tokens...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Token Detail Page -->
+        <div id="tokenPage" class="hidden">
+            <div class="back-btn" onclick="showTokens()">← Back to Tokens</div>
+            <div class="section">
+                <div class="token-header">
+                    <div class="token-title">
+                        <div class="token-icon" id="tokenIconText">T</div>
+                        <span class="token-name" id="tokenName">-</span>
+                        <span class="token-symbol" id="tokenSymbolBadge">-</span>
+                    </div>
+                    <div class="token-stats">
+                        <div class="token-stat">
+                            <label>Total Supply</label>
+                            <span id="tokenSupply">-</span>
+                        </div>
+                        <div class="token-stat">
+                            <label>Decimals</label>
+                            <span id="tokenDecimals">-</span>
+                        </div>
+                        <div class="token-stat">
+                            <label>Holders</label>
+                            <span id="tokenHolderCount">-</span>
+                        </div>
+                        <div class="token-stat">
+                            <label>Transfers</label>
+                            <span id="tokenTransferCount">-</span>
+                        </div>
+                        <div class="token-stat" style="grid-column: span 2;">
+                            <label>Contract Address</label>
+                            <span class="mono" id="tokenContract">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab active" onclick="showTab('transfers')">Transfers</div>
+                    <div class="tab" onclick="showTab('holders')">Holders</div>
+                </div>
+
+                <div id="transfersTab" class="tab-content active">
+                    <table>
+                        <thead><tr><th>Tx Hash</th><th>Block</th><th>From</th><th></th><th>To</th><th>Amount</th></tr></thead>
+                        <tbody id="tokenTransfers"></tbody>
+                    </table>
+                </div>
+
+                <div id="holdersTab" class="tab-content">
+                    <table>
+                        <thead><tr><th style="width:60px">Rank</th><th>Address</th><th>Balance</th><th style="width:150px">Percentage</th></tr></thead>
+                        <tbody id="tokenHolders"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentToken = null;
+        let tokenDecimals = 18;
+        let totalSupply = '0';
+
+        // Navigation
+        function showHome() {
+            document.getElementById('homePage').classList.remove('hidden');
+            document.getElementById('tokensPage').classList.add('hidden');
+            document.getElementById('tokenPage').classList.add('hidden');
+            document.getElementById('nav-home').classList.add('active');
+            document.getElementById('nav-tokens').classList.remove('active');
+        }
+
+        function showTokens() {
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('tokensPage').classList.remove('hidden');
+            document.getElementById('tokenPage').classList.add('hidden');
+            document.getElementById('nav-home').classList.remove('active');
+            document.getElementById('nav-tokens').classList.add('active');
+            loadTokenList();
+        }
+
+        function showTokenPage(addr) {
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('tokensPage').classList.add('hidden');
+            document.getElementById('tokenPage').classList.remove('hidden');
+            loadTokenDetails(addr);
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab:nth-child(${tab === 'transfers' ? 1 : 2})`).classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+        }
+
+        // Load blockchain info
+        async function loadInfo() {
+            try {
+                const res = await fetch('/api/info');
+                const info = await res.json();
+                document.getElementById('height').textContent = info.blocks?.toLocaleString() || '-';
+                document.getElementById('chain').textContent = info.chain || '-';
+
+                // Show PoS difficulty
+                const posDiff = info.staking?.difficulty || 0;
+                document.getElementById('posDifficulty').textContent = posDiff.toLocaleString(undefined, {maximumFractionDigits: 2});
+
+                // Network stake weight
+                const netStake = info.staking?.netstakeweight || 0;
+                document.getElementById('netStake').textContent = `${(netStake / 1e8).toLocaleString()} WATT`;
+            } catch (e) {
+                console.error('Error loading info:', e);
+            }
+        }
+
+        // Load recent blocks
+        async function loadBlocks() {
+            try {
+                const res = await fetch('/api/blocks');
+                const data = await res.json();
+                document.getElementById('blockCount').textContent = data.count?.toLocaleString() || '-';
+                const tbody = document.getElementById('blocks');
+                tbody.innerHTML = data.blocks.map(b => `
+                    <tr>
+                        <td><a href="#" onclick="searchBlock(${b.height})">${b.height}</a></td>
+                        <td class="hash"><a href="#" onclick="searchBlock('${b.hash}')" class="truncate">${b.hash}</a></td>
+                        <td class="time">${timeAgo(b.time * 1000)}</td>
+                        <td>${b.txCount}</td>
+                        <td>${formatBytes(b.size)}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error('Error loading blocks:', e);
+            }
+        }
+
+        // Load token list
+        async function loadTokenList() {
+            const container = document.getElementById('tokenList');
+            container.innerHTML = '<div class="loading">Loading tokens...</div>';
+
+            try {
+                const res = await fetch('/api/tokens');
+                const data = await res.json();
+                document.getElementById('tokenCount').textContent = data.totalTokens;
+
+                if (data.tokens.length === 0) {
+                    container.innerHTML = '<div style="padding:40px;text-align:center;color:#8b949e">No tokens found</div>';
+                    return;
+                }
+
+                container.innerHTML = data.tokens.map(t => `
+                    <div class="token-list-item" onclick="showTokenPage('${t.address}')">
+                        <div class="token-list-icon">${(t.symbol || 'T')[0]}</div>
+                        <div class="token-list-info">
+                            <div class="token-list-name">${t.name || 'Unknown Token'}</div>
+                            <div class="token-list-symbol">${t.symbol || '-'}</div>
+                        </div>
+                        <div class="token-list-supply">
+                            <div>${t.totalSupplyFormatted} ${t.symbol}</div>
+                            <div style="font-size:12px;color:#6e7681">${t.address.slice(0,8)}...${t.address.slice(-6)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                container.innerHTML = '<div style="padding:40px;text-align:center;color:#f85149">Error loading tokens</div>';
+                console.error(e);
+            }
+        }
+
+        // Load token details
+        async function loadTokenDetails(addr) {
+            currentToken = addr;
+            document.getElementById('tokenTransfers').innerHTML = '<tr><td colspan="6" class="loading">Loading transfers...</td></tr>';
+            document.getElementById('tokenHolders').innerHTML = '<tr><td colspan="4" class="loading">Loading holders...</td></tr>';
+
+            try {
+                // Load token info
+                const tokenRes = await fetch(`/api/token/${addr}`);
+                const token = await tokenRes.json();
+
+                tokenDecimals = token.decimals || 18;
+                totalSupply = token.totalSupply || '0';
+
+                document.getElementById('tokenIconText').textContent = (token.symbol || 'T')[0];
+                document.getElementById('tokenName').textContent = token.name || 'Unknown Token';
+                document.getElementById('tokenSymbolBadge').textContent = token.symbol || '-';
+                document.getElementById('tokenSupply').textContent = `${token.totalSupplyFormatted} ${token.symbol}`;
+                document.getElementById('tokenDecimals').textContent = token.decimals;
+                document.getElementById('tokenContract').textContent = addr;
+
+                // Load transfers
+                const transfersRes = await fetch(`/api/token/${addr}/transfers`);
+                const transfers = await transfersRes.json();
+                document.getElementById('tokenTransferCount').textContent = transfers.totalTransfers;
+
+                const tbody = document.getElementById('tokenTransfers');
+                if (transfers.transfers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#8b949e;padding:40px">No transfers found</td></tr>';
+                } else {
+                    tbody.innerHTML = transfers.transfers.map(t => `
+                        <tr>
+                            <td class="hash"><a href="#" onclick="searchTx('${t.txid}')" class="truncate">${t.txid}</a></td>
+                            <td>${t.blockNumber}</td>
+                            <td class="hash"><span class="truncate" title="${t.fromBase58}">${t.fromBase58 || t.from}</span></td>
+                            <td><span class="transfer-arrow">→</span></td>
+                            <td class="hash"><span class="truncate" title="${t.toBase58}">${t.toBase58 || t.to}</span></td>
+                            <td class="amount">${formatTokenAmount(t.value, tokenDecimals)} ${token.symbol}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Load holders
+                const holdersRes = await fetch(`/api/token/${addr}/holders`);
+                const holders = await holdersRes.json();
+                document.getElementById('tokenHolderCount').textContent = holders.totalHolders;
+
+                const holdersTbody = document.getElementById('tokenHolders');
+                if (holders.holders.length === 0) {
+                    holdersTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#8b949e;padding:40px">No holders found</td></tr>';
+                } else {
+                    holdersTbody.innerHTML = holders.holders.map((h, i) => {
+                        const percent = totalSupply !== '0' ? (BigInt(h.balance) * BigInt(10000) / BigInt(totalSupply)) : BigInt(0);
+                        const percentNum = Number(percent) / 100;
+                        return `
+                            <tr>
+                                <td class="holder-rank">#${i + 1}</td>
+                                <td class="hash"><a href="#" onclick="searchAddress('${h.addressBase58}')">${h.addressBase58}</a></td>
+                                <td class="amount">${h.balanceFormatted} ${token.symbol}</td>
+                                <td>
+                                    <div class="holder-percent">${percentNum.toFixed(2)}%</div>
+                                    <div class="progress-bar"><div class="fill" style="width:${Math.min(percentNum, 100)}%"></div></div>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            } catch (e) {
+                console.error('Error loading token details:', e);
+            }
+        }
+
+        // Search
+        async function search() {
+            const q = document.getElementById('searchInput').value.trim();
+            if (!q) return;
+
+            document.getElementById('resultSection').style.display = 'none';
+
+            // Block number
+            if (/^\d+$/.test(q)) {
+                return searchBlock(q);
+            }
+            // Tx hash (64 hex chars)
+            if (/^[a-fA-F0-9]{64}$/.test(q)) {
+                return searchTx(q);
+            }
+            // Contract address (40 hex chars)
+            if (/^[a-fA-F0-9]{40}$/.test(q)) {
+                return showTokenPage(q);
+            }
+            // WATTx address (starts with W)
+            if (q.startsWith('W')) {
+                return searchAddress(q);
+            }
+            alert('Invalid search query. Enter a block number, tx hash, contract address, or WATTx address.');
+        }
+
+        async function searchBlock(id) {
+            try {
+                const res = await fetch(`/api/block/${id}`);
+                const data = await res.json();
+                showResult(data);
+            } catch (e) { alert('Block not found'); }
+        }
+
+        async function searchTx(txid) {
+            try {
+                const res = await fetch(`/api/tx/${txid}`);
+                const data = await res.json();
+                showResult(data);
+            } catch (e) { alert('Transaction not found'); }
+        }
+
+        async function searchAddress(addr) {
+            try {
+                const res = await fetch(`/api/address/${addr}`);
+                const data = await res.json();
+                showResult(data);
+            } catch (e) { alert('Address not found'); }
+        }
+
+        function showResult(data) {
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            document.getElementById('resultSection').style.display = 'block';
+            showHome();
+        }
+
+        // Helpers
+        function formatTokenAmount(amount, decimals) {
+            if (!amount || amount === '0') return '0';
+            const str = amount.toString().padStart(decimals + 1, '0');
+            const whole = str.slice(0, -decimals) || '0';
+            const frac = str.slice(-decimals);
+            let formatted = frac ? `${parseInt(whole).toLocaleString()}.${frac.slice(0, 4)}` : parseInt(whole).toLocaleString();
+            return formatted.replace(/\.?0+$/, '');
+        }
+
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        function timeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            if (seconds < 60) return `${seconds}s ago`;
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
+        }
+
+        // Initial load
+        loadInfo();
+        loadBlocks();
+        setInterval(loadInfo, 10000);
+        setInterval(loadBlocks, 30000);
+
+        // Enter key search
+        document.getElementById('searchInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') search();
+        });
+    </script>
+</body>
+</html>
