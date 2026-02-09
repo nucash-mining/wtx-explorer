@@ -883,9 +883,8 @@ router.post('/contract/decode', async (req, res) => {
   }
 });
 
-// Calculate PoW hashrate from observed block production rate
-// The RPC networkhashps is broken for hybrid PoW/PoS chains
-async function calculatePoWHashrate(rpc, currentHeight) {
+// Calculate network stats from observed blocks (hashrate + block times)
+async function calculateNetworkStats(rpc, currentHeight) {
   try {
     const windowSize = 100;
     const startHeight = Math.max(0, currentHeight - windowSize);
@@ -897,20 +896,32 @@ async function calculatePoWHashrate(rpc, currentHeight) {
     }
 
     const powBlocks = blocks.filter(b => b.flags === 'proof-of-work');
-    if (powBlocks.length < 2) return 0;
-
+    const posBlocks = blocks.filter(b => b.flags === 'proof-of-stake');
     const timeSpan = blocks[0].time - blocks[blocks.length - 1].time;
-    if (timeSpan <= 0) return 0;
 
-    const powDifficulty = powBlocks[0].difficulty || 1.52587890625e-05;
-    return (powBlocks.length * powDifficulty * Math.pow(2, 32)) / timeSpan;
+    // Hashrate
+    let hashrate = 0;
+    if (powBlocks.length >= 2 && timeSpan > 0) {
+      const powDifficulty = powBlocks[0].difficulty || 1.52587890625e-05;
+      hashrate = (powBlocks.length * powDifficulty * Math.pow(2, 32)) / timeSpan;
+    }
+
+    // Block time stats
+    const avgBlockTime = timeSpan > 0 ? timeSpan / (blocks.length - 1) : 0;
+
+    return {
+      hashrate,
+      avgBlockTime: Math.round(avgBlockTime * 10) / 10,
+      powPercent: Math.round(powBlocks.length / blocks.length * 1000) / 10,
+      posPercent: Math.round(posBlocks.length / blocks.length * 1000) / 10
+    };
   } catch {
-    return 0;
+    return { hashrate: 0, avgBlockTime: 0, powPercent: 0, posPercent: 0 };
   }
 }
 
-// Cache hashrate to avoid recalculating on every request
-let cachedHashrate = { value: 0, height: 0 };
+// Cache stats to avoid recalculating on every request
+let cachedStats = { hashrate: 0, avgBlockTime: 0, powPercent: 0, posPercent: 0, height: 0 };
 
 // Get chain info for frontend
 router.get('/chain', async (req, res) => {
@@ -924,11 +935,11 @@ router.get('/chain', async (req, res) => {
       rpc.getTxOutSetInfo().catch(() => null)
     ]);
 
-    // Recalculate hashrate every 10 blocks
+    // Recalculate stats every 10 blocks
     const currentHeight = blockchainInfo.blocks;
-    if (currentHeight - cachedHashrate.height >= 10 || cachedHashrate.value === 0) {
-      cachedHashrate.value = await calculatePoWHashrate(rpc, currentHeight);
-      cachedHashrate.height = currentHeight;
+    if (currentHeight - cachedStats.height >= 10 || cachedStats.hashrate === 0) {
+      const stats = await calculateNetworkStats(rpc, currentHeight);
+      cachedStats = { ...stats, height: currentHeight };
     }
 
     // Use total_amount from gettxoutsetinfo if moneysupply is 0
@@ -937,18 +948,21 @@ router.get('/chain', async (req, res) => {
     // Build miningInfo from available sources (getmininginfo requires wallet, getdifficulty doesn't)
     const miningData = miningInfo ? {
       ...miningInfo,
-      networkhashps: cachedHashrate.value,
+      networkhashps: cachedStats.hashrate,
       networkhashps_rpc: miningInfo.networkhashps
     } : {
       difficulty: difficultyInfo || {},
-      networkhashps: cachedHashrate.value
+      networkhashps: cachedStats.hashrate
     };
 
     res.json({
       ...blockchainInfo,
       moneysupply,
       stakingInfo,
-      miningInfo: miningData
+      miningInfo: miningData,
+      avgBlockTime: cachedStats.avgBlockTime,
+      powPercent: cachedStats.powPercent,
+      posPercent: cachedStats.posPercent
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -184,20 +184,20 @@ function HomePage() {
       {/* Secondary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="card text-center">
-          <p className="text-gray-500 text-xs">Difficulty (PoW)</p>
-          <p className="font-bold text-white">{chainInfo?.difficulty?.toExponential(2) || chainInfo?.miningInfo?.difficulty?.['proof-of-work']?.toExponential(2) || '0'}</p>
+          <p className="text-gray-500 text-xs">Avg Block Time</p>
+          <p className="font-bold text-white">{chainInfo?.avgBlockTime ? `${chainInfo.avgBlockTime}s` : '-'}</p>
         </div>
         <div className="card text-center">
-          <p className="text-gray-500 text-xs">Difficulty (PoS)</p>
-          <p className="font-bold text-white">{chainInfo?.miningInfo?.difficulty?.['proof-of-stake']?.toExponential(2) || '0'}</p>
+          <p className="text-gray-500 text-xs">PoW / PoS Ratio</p>
+          <p className="font-bold text-white">{chainInfo?.powPercent || 0}% / {chainInfo?.posPercent || 0}%</p>
         </div>
         <div className="card text-center">
           <p className="text-gray-500 text-xs">Staking Status</p>
           <p className="font-bold text-white">{chainInfo?.stakingInfo?.staking !== false ? 'Active' : 'Inactive'}</p>
         </div>
         <div className="card text-center">
-          <p className="text-gray-500 text-xs">Stake Maturity</p>
-          <p className="font-bold text-white">{chainInfo?.stakingInfo?.stakematurity || 500} blocks</p>
+          <p className="text-gray-500 text-xs">Difficulty (PoW)</p>
+          <p className="font-bold text-white">{chainInfo?.difficulty?.toExponential(2) || chainInfo?.miningInfo?.difficulty?.['proof-of-work']?.toExponential(2) || '0'}</p>
         </div>
       </div>
 
