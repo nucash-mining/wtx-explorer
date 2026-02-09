@@ -156,9 +156,14 @@ class WATTxRPC {
     return this.call('getstakinginfo', [], true);
   }
 
+  // Get difficulty (works without wallet)
+  async getDifficulty() {
+    return this.call('getdifficulty');
+  }
+
   // Get network hashrate with custom block window (default 720 blocks = ~12 hours)
   async getNetworkHashPs(nblocks = 720) {
-    return this.call('getnetworkhashps', [nblocks], true);
+    return this.call('getnetworkhashps', [nblocks]);
   }
 
   async getBlockchainInfo() {

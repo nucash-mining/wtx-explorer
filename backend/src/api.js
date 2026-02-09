@@ -916,11 +916,12 @@ let cachedHashrate = { value: 0, height: 0 };
 router.get('/chain', async (req, res) => {
   try {
     const rpc = req.app.locals.rpc;
-    const [blockchainInfo, stakingInfo, miningInfo, txOutSetInfo] = await Promise.all([
+    const [blockchainInfo, stakingInfo, miningInfo, difficultyInfo, txOutSetInfo] = await Promise.all([
       rpc.getBlockchainInfo(),
       rpc.getStakingInfo().catch(() => null),
       rpc.getMiningInfo().catch(() => null),
-      rpc.getTxOutSetInfo().catch(() => null) // Get actual money supply
+      rpc.getDifficulty().catch(() => null),
+      rpc.getTxOutSetInfo().catch(() => null)
     ]);
 
     // Recalculate hashrate every 10 blocks
@@ -933,15 +934,21 @@ router.get('/chain', async (req, res) => {
     // Use total_amount from gettxoutsetinfo if moneysupply is 0
     const moneysupply = blockchainInfo.moneysupply || txOutSetInfo?.total_amount || 0;
 
+    // Build miningInfo from available sources (getmininginfo requires wallet, getdifficulty doesn't)
+    const miningData = miningInfo ? {
+      ...miningInfo,
+      networkhashps: cachedHashrate.value,
+      networkhashps_rpc: miningInfo.networkhashps
+    } : {
+      difficulty: difficultyInfo || {},
+      networkhashps: cachedHashrate.value
+    };
+
     res.json({
       ...blockchainInfo,
-      moneysupply, // Override with actual supply
+      moneysupply,
       stakingInfo,
-      miningInfo: miningInfo ? {
-        ...miningInfo,
-        networkhashps: cachedHashrate.value,
-        networkhashps_rpc: miningInfo.networkhashps // Keep original for debugging
-      } : null
+      miningInfo: miningData
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
