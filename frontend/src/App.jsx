@@ -80,28 +80,30 @@ function Header() {
   };
 
   return (
-    <header className="bg-gradient-to-r from-blue-700 to-blue-900 text-white shadow-lg">
+    <header className="shadow-lg" style={{ background: 'linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%)', borderBottom: '2px solid #D4A826' }}>
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <Link to="/" className="text-2xl font-bold flex items-center gap-2">
-            <span className="text-yellow-400">⚡</span> WATTx Explorer
+          <Link to="/" className="text-2xl font-bold flex items-center gap-2 text-white">
+            <img src="/logo.png" alt="WATTx" className="w-8 h-8" />
+            <span style={{ color: '#D4A826' }}>WATTx</span> Explorer
           </Link>
           <nav className="hidden md:flex space-x-6">
-            <Link to="/" className="hover:text-blue-200 transition">Home</Link>
-            <Link to="/blocks" className="hover:text-blue-200 transition">Blocks</Link>
-            <Link to="/txs" className="hover:text-blue-200 transition">Transactions</Link>
-            <Link to="/tokens" className="hover:text-blue-200 transition">Tokens</Link>
-            <Link to="/contracts" className="hover:text-blue-200 transition">Contracts</Link>
+            <Link to="/" className="text-gray-300 hover:text-[#D4A826] transition">Home</Link>
+            <Link to="/blocks" className="text-gray-300 hover:text-[#D4A826] transition">Blocks</Link>
+            <Link to="/txs" className="text-gray-300 hover:text-[#D4A826] transition">Transactions</Link>
+            <Link to="/tokens" className="text-gray-300 hover:text-[#D4A826] transition">Tokens</Link>
+            <Link to="/contracts" className="text-gray-300 hover:text-[#D4A826] transition">Contracts</Link>
           </nav>
           <form onSubmit={handleSearch} className="flex">
             <input
               type="text"
               placeholder="Block, Tx, Address, Token..."
-              className="px-4 py-2 rounded-l-lg text-gray-900 w-48 md:w-64 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              className="px-4 py-2 rounded-l-lg w-48 md:w-64 focus:outline-none text-gray-100"
+              style={{ backgroundColor: '#161b26', border: '1px solid #2a3040' }}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <button type="submit" className="bg-yellow-500 text-gray-900 px-4 py-2 rounded-r-lg hover:bg-yellow-400 font-semibold transition">
+            <button type="submit" className="px-4 py-2 rounded-r-lg font-semibold transition" style={{ backgroundColor: '#D4A826', color: '#0f1419' }}>
               Search
             </button>
           </form>
@@ -146,7 +148,7 @@ function HomePage() {
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            {[1,2,3,4].map(i => <div key={i} className="h-24 bg-gray-200 rounded-lg"></div>)}
+            {[1,2,3,4].map(i => <div key={i} className="h-24 bg-[#1a1f2e] rounded-lg"></div>)}
           </div>
         </div>
       </div>
@@ -157,25 +159,25 @@ function HomePage() {
     <div className="container mx-auto px-4 py-8">
       {/* Network Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="card bg-gradient-to-br from-blue-500 to-blue-700 text-white">
-          <h3 className="text-blue-100 text-sm font-medium">Block Height</h3>
-          <p className="text-3xl font-bold">{formatNumber(chainInfo?.blocks || 0)}</p>
-          <p className="text-blue-200 text-xs mt-1">Chain: {chainInfo?.chain || 'main'}</p>
+        <div className="card" style={{ borderLeft: '4px solid #D4A826' }}>
+          <h3 className="text-gray-400 text-sm font-medium">Block Height</h3>
+          <p className="text-3xl font-bold text-white">{formatNumber(chainInfo?.blocks || 0)}</p>
+          <p className="text-gray-500 text-xs mt-1">Chain: {chainInfo?.chain || 'main'}</p>
         </div>
-        <div className="card bg-gradient-to-br from-green-500 to-green-700 text-white">
-          <h3 className="text-green-100 text-sm font-medium">Money Supply</h3>
-          <p className="text-3xl font-bold">{formatNumber(chainInfo?.moneysupply || 0)}</p>
-          <p className="text-green-200 text-xs mt-1">WTX in circulation</p>
+        <div className="card" style={{ borderLeft: '4px solid #4ade80' }}>
+          <h3 className="text-gray-400 text-sm font-medium">Money Supply</h3>
+          <p className="text-3xl font-bold text-white">{formatNumber(chainInfo?.moneysupply || 0)}</p>
+          <p className="text-gray-500 text-xs mt-1">WTX in circulation</p>
         </div>
-        <div className="card bg-gradient-to-br from-purple-500 to-purple-700 text-white">
-          <h3 className="text-purple-100 text-sm font-medium">Network Hashrate</h3>
-          <p className="text-3xl font-bold">{formatHashRate(chainInfo?.miningInfo?.networkhashps || 0)}</p>
-          <p className="text-purple-200 text-xs mt-1">PoW Mining Power</p>
+        <div className="card" style={{ borderLeft: '4px solid #a78bfa' }}>
+          <h3 className="text-gray-400 text-sm font-medium">Network Hashrate</h3>
+          <p className="text-3xl font-bold text-white">{formatHashRate(chainInfo?.miningInfo?.networkhashps || 0)}</p>
+          <p className="text-gray-500 text-xs mt-1">PoW Mining Power</p>
         </div>
-        <div className="card bg-gradient-to-br from-orange-500 to-orange-700 text-white">
-          <h3 className="text-orange-100 text-sm font-medium">Stake Weight</h3>
-          <p className="text-3xl font-bold">{formatStakeWeight(chainInfo?.stakingInfo?.netstakeweight || chainInfo?.miningInfo?.netstakeweight || 0)}</p>
-          <p className="text-orange-200 text-xs mt-1">Mature coins staking</p>
+        <div className="card" style={{ borderLeft: '4px solid #fb923c' }}>
+          <h3 className="text-gray-400 text-sm font-medium">Stake Weight</h3>
+          <p className="text-3xl font-bold text-white">{formatStakeWeight(chainInfo?.stakingInfo?.netstakeweight || chainInfo?.miningInfo?.netstakeweight || 0)}</p>
+          <p className="text-gray-500 text-xs mt-1">Mature coins staking</p>
         </div>
       </div>
 
@@ -183,19 +185,19 @@ function HomePage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="card text-center">
           <p className="text-gray-500 text-xs">Difficulty (PoW)</p>
-          <p className="font-bold">{chainInfo?.difficulty?.toExponential(2) || chainInfo?.miningInfo?.difficulty?.['proof-of-work']?.toExponential(2) || '0'}</p>
+          <p className="font-bold text-white">{chainInfo?.difficulty?.toExponential(2) || chainInfo?.miningInfo?.difficulty?.['proof-of-work']?.toExponential(2) || '0'}</p>
         </div>
         <div className="card text-center">
           <p className="text-gray-500 text-xs">Difficulty (PoS)</p>
-          <p className="font-bold">{chainInfo?.miningInfo?.difficulty?.['proof-of-stake']?.toExponential(2) || '0'}</p>
+          <p className="font-bold text-white">{chainInfo?.miningInfo?.difficulty?.['proof-of-stake']?.toExponential(2) || '0'}</p>
         </div>
         <div className="card text-center">
           <p className="text-gray-500 text-xs">Staking Status</p>
-          <p className="font-bold">{chainInfo?.stakingInfo?.staking ? '✅ Active' : '⏸️ Inactive'}</p>
+          <p className="font-bold text-white">{chainInfo?.stakingInfo?.staking !== false ? 'Active' : 'Inactive'}</p>
         </div>
         <div className="card text-center">
           <p className="text-gray-500 text-xs">Stake Maturity</p>
-          <p className="font-bold">{chainInfo?.stakingInfo?.stakematurity || 500} blocks</p>
+          <p className="font-bold text-white">{chainInfo?.stakingInfo?.stakematurity || 500} blocks</p>
         </div>
       </div>
 
@@ -203,12 +205,12 @@ function HomePage() {
       <div className="card">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Recent Blocks</h2>
-          <Link to="/blocks" className="text-blue-600 hover:text-blue-800 text-sm">View all →</Link>
+          <Link to="/blocks" className="text-[#D4A826] hover:text-[#E8C84A] text-sm">View all →</Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b bg-gray-50">
+              <tr className="border-b bg-[#161b26]">
                 <th className="py-3 px-2 text-left text-sm font-semibold">Height</th>
                 <th className="py-3 px-2 text-left text-sm font-semibold">Hash</th>
                 <th className="py-3 px-2 text-left text-sm font-semibold">Type</th>
@@ -218,14 +220,14 @@ function HomePage() {
             </thead>
             <tbody>
               {blocks.map((block) => (
-                <tr key={block.height} className="border-b hover:bg-gray-50 transition">
+                <tr key={block.height} className="border-b hover:bg-[#222838] transition">
                   <td className="py-3 px-2">
-                    <Link to={`/block/${block.height}`} className="text-blue-600 hover:text-blue-800 font-medium">
+                    <Link to={`/block/${block.height}`} className="text-[#D4A826] hover:text-[#E8C84A] font-medium">
                       {formatNumber(block.height)}
                     </Link>
                   </td>
                   <td className="py-3 px-2 font-mono text-sm">
-                    <Link to={`/block/${block.hash}`} className="text-blue-600 hover:text-blue-800">
+                    <Link to={`/block/${block.hash}`} className="text-[#D4A826] hover:text-[#E8C84A]">
                       {truncateHash(block.hash)}
                     </Link>
                   </td>
@@ -284,7 +286,7 @@ function BlockPage() {
           <div>
             <p className="text-gray-500 text-sm">Parent Hash</p>
             <p className="font-mono text-sm break-all">
-              <Link to={`/block/${block.parent_hash}`} className="text-blue-600">{block.parent_hash}</Link>
+              <Link to={`/block/${block.parent_hash}`} className="text-[#D4A826]">{block.parent_hash}</Link>
             </p>
           </div>
           <div>
@@ -313,7 +315,7 @@ function BlockPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b bg-gray-50">
+              <tr className="border-b bg-[#161b26]">
                 <th className="py-2 text-left text-sm">Hash</th>
                 <th className="py-2 text-left text-sm">From</th>
                 <th className="py-2 text-left text-sm">To</th>
@@ -322,19 +324,19 @@ function BlockPage() {
             </thead>
             <tbody>
               {transactions.map((tx) => (
-                <tr key={tx.hash} className="border-b hover:bg-gray-50">
+                <tr key={tx.hash} className="border-b hover:bg-[#222838]">
                   <td className="py-2 font-mono text-sm">
-                    <Link to={`/tx/${tx.hash}`} className="text-blue-600">{truncateHash(tx.hash)}</Link>
+                    <Link to={`/tx/${tx.hash}`} className="text-[#D4A826]">{truncateHash(tx.hash)}</Link>
                   </td>
                   <td className="py-2 font-mono text-sm">
                     {tx.from_address ? (
-                      <Link to={`/address/${tx.from_address}`} className="text-green-600">{truncateHash(tx.from_address)}</Link>
+                      <Link to={`/address/${tx.from_address}`} className="text-emerald-400">{truncateHash(tx.from_address)}</Link>
                     ) : '-'}
                   </td>
                   <td className="py-2 font-mono text-sm">
                     {tx.to_address ? (
-                      <Link to={`/address/${tx.to_address}`} className="text-green-600">{truncateHash(tx.to_address)}</Link>
-                    ) : <span className="text-purple-600">Contract Creation</span>}
+                      <Link to={`/address/${tx.to_address}`} className="text-emerald-400">{truncateHash(tx.to_address)}</Link>
+                    ) : <span className="text-purple-400">Contract Creation</span>}
                   </td>
                   <td className="py-2">{formatWTX(tx.value)} WTX</td>
                 </tr>
@@ -386,20 +388,20 @@ function TransactionPage() {
           </div>
           <div>
             <p className="text-gray-500 text-sm">Block</p>
-            <Link to={`/block/${tx.block_height}`} className="text-blue-600 font-medium">{formatNumber(tx.block_height)}</Link>
+            <Link to={`/block/${tx.block_height}`} className="text-[#D4A826] font-medium">{formatNumber(tx.block_height)}</Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-gray-500 text-sm">From</p>
               {tx.from_address ? (
-                <Link to={`/address/${tx.from_address}`} className="font-mono text-sm text-green-600 break-all">{tx.from_address}</Link>
+                <Link to={`/address/${tx.from_address}`} className="font-mono text-sm text-emerald-400 break-all">{tx.from_address}</Link>
               ) : <span className="text-gray-400">-</span>}
             </div>
             <div>
               <p className="text-gray-500 text-sm">To</p>
               {tx.to_address ? (
-                <Link to={`/address/${tx.to_address}`} className="font-mono text-sm text-green-600 break-all">{tx.to_address}</Link>
-              ) : <span className="text-purple-600">Contract Creation</span>}
+                <Link to={`/address/${tx.to_address}`} className="font-mono text-sm text-emerald-400 break-all">{tx.to_address}</Link>
+              ) : <span className="text-purple-400">Contract Creation</span>}
             </div>
           </div>
           <div>
@@ -416,9 +418,9 @@ function TransactionPage() {
             <div key={i} className="border-b py-3 last:border-0">
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-gray-500">From:</span>
-                <Link to={`/address/${t.from_address}`} className="font-mono text-green-600">{truncateHash(t.from_address)}</Link>
+                <Link to={`/address/${t.from_address}`} className="font-mono text-emerald-400">{truncateHash(t.from_address)}</Link>
                 <span className="text-gray-500">→</span>
-                <Link to={`/address/${t.to_address}`} className="font-mono text-green-600">{truncateHash(t.to_address)}</Link>
+                <Link to={`/address/${t.to_address}`} className="font-mono text-emerald-400">{truncateHash(t.to_address)}</Link>
                 <span className="font-medium ml-2">{t.value} {t.symbol || 'tokens'}</span>
               </div>
             </div>
@@ -432,8 +434,8 @@ function TransactionPage() {
           {logs.map((log, i) => (
             <div key={i} className="border-b py-4 last:border-0">
               <p className="text-sm text-gray-500">Log #{log.log_index}</p>
-              <p className="font-mono text-sm">Contract: <Link to={`/address/${log.address}`} className="text-blue-600">{truncateHash(log.address, 12)}</Link></p>
-              <div className="mt-2 bg-gray-50 p-2 rounded text-xs font-mono overflow-x-auto">
+              <p className="font-mono text-sm">Contract: <Link to={`/address/${log.address}`} className="text-[#D4A826]">{truncateHash(log.address, 12)}</Link></p>
+              <div className="mt-2 bg-[#161b26] p-2 rounded text-xs font-mono overflow-x-auto">
                 {[log.topic0, log.topic1, log.topic2, log.topic3].filter(Boolean).map((t, j) => (
                   <div key={j} className="text-gray-600">[{j}] {t}</div>
                 ))}
@@ -587,25 +589,25 @@ function ContractPage() {
       <div className="flex border-b mb-4">
         <button
           onClick={() => setActiveTab('read')}
-          className={`px-4 py-2 font-medium ${activeTab === 'read' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-4 py-2 font-medium ${activeTab === 'read' ? 'border-b-2 border-[#D4A826] text-[#D4A826]' : 'text-gray-500'}`}
         >
           Read Contract
         </button>
         <button
           onClick={() => setActiveTab('write')}
-          className={`px-4 py-2 font-medium ${activeTab === 'write' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-4 py-2 font-medium ${activeTab === 'write' ? 'border-b-2 border-[#D4A826] text-[#D4A826]' : 'text-gray-500'}`}
         >
           Write Contract
         </button>
         <button
           onClick={() => setActiveTab('code')}
-          className={`px-4 py-2 font-medium ${activeTab === 'code' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-4 py-2 font-medium ${activeTab === 'code' ? 'border-b-2 border-[#D4A826] text-[#D4A826]' : 'text-gray-500'}`}
         >
           Code
         </button>
         <button
           onClick={() => setActiveTab('events')}
-          className={`px-4 py-2 font-medium ${activeTab === 'events' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-4 py-2 font-medium ${activeTab === 'events' ? 'border-b-2 border-[#D4A826] text-[#D4A826]' : 'text-gray-500'}`}
         >
           Events
         </button>
@@ -615,7 +617,7 @@ function ContractPage() {
       {activeTab === 'read' && (
         <div className="space-y-6">
           {/* Raw Call Section - works for all contracts */}
-          <div className="card border-2 border-blue-200">
+          <div className="card border-2 border-[#2a3040]">
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
               <span className="text-2xl">🔧</span> Low Level Interaction
             </h2>
@@ -651,7 +653,7 @@ function ContractPage() {
                     <div className="space-y-2">
                       <div>
                         <span className="text-gray-600 text-sm">Success:</span>
-                        <span className={`ml-2 ${rawCallResult.success ? 'text-green-600' : 'text-red-600'}`}>
+                        <span className={`ml-2 ${rawCallResult.success ? 'text-emerald-400' : 'text-red-600'}`}>
                           {rawCallResult.success ? 'Yes' : 'No'}
                         </span>
                       </div>
@@ -675,7 +677,7 @@ function ContractPage() {
           </div>
 
           {/* Storage Reader */}
-          <div className="card border-2 border-purple-200">
+          <div className="card border-2 border-[#2a3040]">
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
               <span className="text-2xl">💾</span> Storage Viewer
             </h2>
@@ -714,7 +716,7 @@ function ContractPage() {
                 {contract.readFunctions.map((func, i) => (
                   <div key={i} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-blue-700">{i + 1}. {func.name}</h3>
+                      <h3 className="font-medium text-[#D4A826]">{i + 1}. {func.name}</h3>
                       <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">{func.stateMutability}</span>
                     </div>
 
@@ -771,7 +773,7 @@ function ContractPage() {
             <div className="card bg-yellow-50 border border-yellow-200">
               <p className="text-yellow-800">
                 <strong>Contract not verified.</strong> Use the low-level interaction above, or{' '}
-                <Link to="/verify" className="text-blue-600 underline">verify the contract</Link> to get function names and types.
+                <Link to="/verify" className="text-[#D4A826] underline">verify the contract</Link> to get function names and types.
               </p>
             </div>
           )}
@@ -783,7 +785,7 @@ function ContractPage() {
         <div className="card">
           <h2 className="text-lg font-bold mb-4">Write Functions (State Changing)</h2>
           {!contract.verified ? (
-            <p className="text-gray-500">Contract not verified. <Link to="/verify" className="text-blue-600">Verify contract</Link> to interact.</p>
+            <p className="text-gray-500">Contract not verified. <Link to="/verify" className="text-[#D4A826]">Verify contract</Link> to interact.</p>
           ) : contract.writeFunctions.length === 0 ? (
             <p className="text-gray-500">No write functions found</p>
           ) : (
@@ -894,7 +896,7 @@ function ContractEventsTab({ address, events: eventDefs }) {
                 <span className="font-medium text-purple-700">
                   {event.decoded?.name || 'Unknown Event'}
                 </span>
-                <Link to={`/tx/${event.txHash}`} className="text-blue-600 text-sm font-mono">
+                <Link to={`/tx/${event.txHash}`} className="text-[#D4A826] text-sm font-mono">
                   {truncateHash(event.txHash)}
                 </Link>
               </div>
@@ -975,7 +977,7 @@ function AddressPage() {
               {addressData.tokenBalances.map((token, i) => (
                 <tr key={i} className="border-b">
                   <td className="py-2">
-                    <Link to={`/token/${token.token_address}`} className="text-blue-600">
+                    <Link to={`/token/${token.token_address}`} className="text-[#D4A826]">
                       {token.name} ({token.symbol})
                     </Link>
                   </td>
@@ -1001,12 +1003,12 @@ function AddressPage() {
             </thead>
             <tbody>
               {addressData.recentTransactions?.map((tx) => (
-                <tr key={tx.hash} className="border-b hover:bg-gray-50">
+                <tr key={tx.hash} className="border-b hover:bg-[#222838]">
                   <td className="py-2 font-mono text-sm">
-                    <Link to={`/tx/${tx.hash}`} className="text-blue-600">{truncateHash(tx.hash)}</Link>
+                    <Link to={`/tx/${tx.hash}`} className="text-[#D4A826]">{truncateHash(tx.hash)}</Link>
                   </td>
                   <td className="py-2">
-                    <Link to={`/block/${tx.block_height}`} className="text-blue-600">{tx.block_height}</Link>
+                    <Link to={`/block/${tx.block_height}`} className="text-[#D4A826]">{tx.block_height}</Link>
                   </td>
                   <td className="py-2 font-mono text-sm">{truncateHash(tx.from_address)}</td>
                   <td className="py-2 font-mono text-sm">{truncateHash(tx.to_address)}</td>
@@ -1048,7 +1050,7 @@ function BlocksPage() {
       <div className="card">
         <table className="w-full">
           <thead>
-            <tr className="border-b bg-gray-50">
+            <tr className="border-b bg-[#161b26]">
               <th className="py-3 px-2 text-left">Height</th>
               <th className="py-3 px-2 text-left">Hash</th>
               <th className="py-3 px-2 text-left">Type</th>
@@ -1059,12 +1061,12 @@ function BlocksPage() {
           </thead>
           <tbody>
             {blocks.map((block) => (
-              <tr key={block.height} className="border-b hover:bg-gray-50">
+              <tr key={block.height} className="border-b hover:bg-[#222838]">
                 <td className="py-2 px-2">
-                  <Link to={`/block/${block.height}`} className="text-blue-600 font-medium">{formatNumber(block.height)}</Link>
+                  <Link to={`/block/${block.height}`} className="text-[#D4A826] font-medium">{formatNumber(block.height)}</Link>
                 </td>
                 <td className="py-2 px-2 font-mono text-sm">
-                  <Link to={`/block/${block.hash}`} className="text-blue-600">{truncateHash(block.hash)}</Link>
+                  <Link to={`/block/${block.hash}`} className="text-[#D4A826]">{truncateHash(block.hash)}</Link>
                 </td>
                 <td className="py-2 px-2">
                   <span className={`px-2 py-1 rounded text-xs ${block.is_pos ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
@@ -1110,7 +1112,7 @@ function TokensPage() {
       <div className="card">
         <table className="w-full">
           <thead>
-            <tr className="border-b bg-gray-50">
+            <tr className="border-b bg-[#161b26]">
               <th className="py-3 px-2 text-left">Name</th>
               <th className="py-3 px-2 text-left">Symbol</th>
               <th className="py-3 px-2 text-left">Contract Address</th>
@@ -1118,11 +1120,11 @@ function TokensPage() {
           </thead>
           <tbody>
             {contracts.map((c) => (
-              <tr key={c.address} className="border-b hover:bg-gray-50">
+              <tr key={c.address} className="border-b hover:bg-[#222838]">
                 <td className="py-2 px-2 font-medium">{c.token?.name || 'Unknown'}</td>
-                <td className="py-2 px-2 font-bold text-blue-600">{c.token?.symbol || '???'}</td>
+                <td className="py-2 px-2 font-bold text-[#D4A826]">{c.token?.symbol || '???'}</td>
                 <td className="py-2 px-2 font-mono text-sm">
-                  <Link to={`/address/${c.address}`} className="text-blue-600">{truncateHash(c.address, 12)}</Link>
+                  <Link to={`/address/${c.address}`} className="text-[#D4A826]">{truncateHash(c.address, 12)}</Link>
                 </td>
               </tr>
             ))}
@@ -1170,7 +1172,7 @@ function TokenPage() {
           <div><span className="text-gray-500">Total Supply:</span> {token.total_supply}</div>
           <div className="col-span-2">
             <span className="text-gray-500">Contract:</span>
-            <Link to={`/address/0x${token.address}`} className="font-mono text-sm ml-2 text-blue-600">0x{token.address}</Link>
+            <Link to={`/address/0x${token.address}`} className="font-mono text-sm ml-2 text-[#D4A826]">0x{token.address}</Link>
           </div>
         </div>
       </div>
@@ -1208,7 +1210,7 @@ function ContractsListPage() {
       <div className="card">
         <table className="w-full">
           <thead>
-            <tr className="border-b bg-gray-50">
+            <tr className="border-b bg-[#161b26]">
               <th className="py-3 px-2 text-left">Address</th>
               <th className="py-3 px-2 text-left">Base58</th>
               <th className="py-3 px-2 text-left">Type</th>
@@ -1217,11 +1219,11 @@ function ContractsListPage() {
           </thead>
           <tbody>
             {contracts.map((c) => (
-              <tr key={c.address} className="border-b hover:bg-gray-50">
+              <tr key={c.address} className="border-b hover:bg-[#222838]">
                 <td className="py-2 px-2 font-mono text-sm">
-                  <Link to={`/address/${c.address}`} className="text-blue-600">{truncateHash(c.address, 10)}</Link>
+                  <Link to={`/address/${c.address}`} className="text-[#D4A826]">{truncateHash(c.address, 10)}</Link>
                 </td>
-                <td className="py-2 px-2 font-mono text-sm text-green-600">{c.base58Address}</td>
+                <td className="py-2 px-2 font-mono text-sm text-emerald-400">{c.base58Address}</td>
                 <td className="py-2 px-2">
                   <span className={`px-2 py-1 rounded text-xs ${c.isToken ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
                     {c.isToken ? 'Token' : 'Contract'}
@@ -1346,7 +1348,7 @@ function ContractVerifyPage() {
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen" style={{ backgroundColor: '#0f1419' }}>
         <Header />
         <main className="pb-8">
           <Routes>
@@ -1363,10 +1365,10 @@ function App() {
             <Route path="/verify" element={<ContractVerifyPage />} />
           </Routes>
         </main>
-        <footer className="bg-gray-800 text-white py-6">
+        <footer className="py-6" style={{ backgroundColor: '#0a0e13', borderTop: '1px solid #2a3040' }}>
           <div className="container mx-auto px-4 text-center">
-            <p className="text-gray-400">WATTx Block Explorer - Powered by WATTx Core</p>
-            <p className="text-gray-500 text-sm mt-1">Hybrid PoW/PoS • EVM Compatible • QRC-20 Tokens</p>
+            <p className="text-gray-400">WATTx Block Explorer - Powered by <span style={{ color: '#D4A826' }}>WATTx Core</span></p>
+            <p className="text-gray-600 text-sm mt-1">Hybrid PoW/PoS • EVM Compatible • QRC-20 Tokens</p>
           </div>
         </footer>
       </div>

@@ -1,11 +1,25 @@
 @import "tailwindcss";
 
+:root {
+  --gold: #D4A826;
+  --gold-light: #E8C84A;
+  --gold-dark: #B8901E;
+  --dark-bg: #0f1419;
+  --dark-card: #1a1f2e;
+  --dark-card-hover: #222838;
+  --dark-border: #2a3040;
+}
+
 body {
-  @apply bg-gray-100 text-gray-900 m-0;
+  @apply m-0;
+  background-color: var(--dark-bg);
+  color: #e0e0e0;
 }
 
 .card {
-  @apply bg-white rounded-lg shadow p-6;
+  background-color: var(--dark-card);
+  border: 1px solid var(--dark-border);
+  @apply rounded-lg shadow-lg p-6;
 }
 
 .btn {
@@ -13,17 +27,42 @@ body {
 }
 
 .btn-primary {
-  @apply bg-blue-600 text-white hover:bg-blue-700;
+  background-color: var(--gold);
+  color: #0f1419;
+  @apply font-semibold;
+}
+
+.btn-primary:hover {
+  background-color: var(--gold-light);
 }
 
 .input {
-  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  background-color: #161b26;
+  border: 1px solid var(--dark-border);
+  color: #e0e0e0;
+  @apply w-full px-4 py-2 rounded-lg;
+}
+
+.input:focus {
+  border-color: var(--gold);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(212, 168, 38, 0.3);
 }
 
 .hash {
-  @apply font-mono text-sm text-blue-600 hover:text-blue-800 cursor-pointer;
+  color: var(--gold);
+  @apply font-mono text-sm cursor-pointer;
+}
+
+.hash:hover {
+  color: var(--gold-light);
 }
 
 .address {
-  @apply font-mono text-sm text-green-600 hover:text-green-800 cursor-pointer;
+  color: #4ade80;
+  @apply font-mono text-sm cursor-pointer;
+}
+
+.address:hover {
+  color: #86efac;
 }
