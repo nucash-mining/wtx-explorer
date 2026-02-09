@@ -31,10 +31,10 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Serve static files in production
+// Serve static files in production (nginx handles frontend, this is a fallback)
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../../frontend/dist')));
-  app.get('*', (req, res) => {
+  app.use((req, res) => {
     res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
   });
 }
