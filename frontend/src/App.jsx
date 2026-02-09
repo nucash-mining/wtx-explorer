@@ -192,8 +192,8 @@ function HomePage() {
           <p className="font-bold text-white">{chainInfo?.powPercent || 0}% / {chainInfo?.posPercent || 0}%</p>
         </div>
         <div className="card text-center">
-          <p className="text-gray-500 text-xs">Staking Status</p>
-          <p className="font-bold text-white">{chainInfo?.stakingInfo?.enabled ? 'Active' : 'Inactive'}</p>
+          <p className="text-gray-500 text-xs">Network Staking</p>
+          <p className="font-bold text-white">{(chainInfo?.stakingInfo?.netstakeweight > 0 || chainInfo?.posPercent > 0) ? 'Active' : 'Inactive'}</p>
         </div>
         <div className="card text-center">
           <p className="text-gray-500 text-xs">Difficulty (PoW)</p>
