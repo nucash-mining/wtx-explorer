@@ -193,7 +193,7 @@ function HomePage() {
         </div>
         <div className="card text-center">
           <p className="text-gray-500 text-xs">Staking Status</p>
-          <p className="font-bold text-white">{chainInfo?.stakingInfo?.staking !== false ? 'Active' : 'Inactive'}</p>
+          <p className="font-bold text-white">{chainInfo?.stakingInfo?.enabled ? 'Active' : 'Inactive'}</p>
         </div>
         <div className="card text-center">
           <p className="text-gray-500 text-xs">Difficulty (PoW)</p>
