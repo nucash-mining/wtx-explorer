@@ -24,16 +24,21 @@ router.get('/block/:id', async (req, res) => {
     const rpc = req.app.locals.rpc;
     let block;
 
-    if (id.startsWith('0x')) {
+    const isHash = /^[0-9a-fA-F]{64}$/.test(id);
+    if (isHash) {
       block = statements.getBlockByHash.get(id);
     } else {
       block = statements.getBlock.get(parseInt(id));
     }
 
     // If not in DB, try to fetch from node
+    let rpcTxs = null;
     if (!block && rpc) {
       try {
-        const rpcBlock = await rpc.getBlock(id.startsWith('0x') ? id : parseInt(id), 2);
+        // Detect if id is a block hash (64 hex chars) or a height (numeric)
+        const isHash = /^[0-9a-fA-F]{64}$/.test(id);
+        const blockId = isHash ? id : parseInt(id);
+        const rpcBlock = await rpc.getBlock(blockId, 2);
         if (rpcBlock) {
           block = {
             height: rpcBlock.height,
@@ -44,15 +49,26 @@ router.get('/block/:id', async (req, res) => {
             size: rpcBlock.size,
             is_pos: rpcBlock.flags?.includes('proof-of-stake') ? 1 : 0
           };
+          // Parse transactions from RPC response
+          rpcTxs = (rpcBlock.tx || []).map(tx => ({
+            hash: tx.txid,
+            block_height: rpcBlock.height,
+            block_hash: rpcBlock.hash,
+            timestamp: rpcBlock.time,
+            value: tx.vout?.reduce((sum, o) => sum + (o.value || 0), 0) || 0,
+            fee: 0
+          }));
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error(`RPC block fallback failed for ${id}:`, e.message);
+      }
     }
 
     if (!block) {
       return res.status(404).json({ error: 'Block not found' });
     }
 
-    const transactions = statements.getTxsByBlock.all(block.height);
+    const transactions = rpcTxs || statements.getTxsByBlock.all(block.height);
 
     res.json({ block, transactions });
   } catch (error) {
